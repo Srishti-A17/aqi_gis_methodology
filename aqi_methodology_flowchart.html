@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Spatial Analysis Methodology Flowchart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .title h1 {
+            font-size: 32px;
+            color: #1e3a5f;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .title p {
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Section Styles */
+        .section {
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            display: inline-block;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            padding: 12px 32px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .preprocessing .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .layer1 .section-title {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .layer2 .section-title {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .layer3 .section-title {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .layer4 .section-title {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Box Styles */
+        .box-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .box {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 20px 24px;
+            min-width: 280px;
+            max-width: 350px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            border-color: #cbd5e1;
+        }
+
+        .process-box {
+            border-radius: 8px;
+        }
+
+        .output-box {
+            border-radius: 24px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .box-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .box-description {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .box-description ul {
+            margin-top: 8px;
+            padding-left: 18px;
+        }
+
+        .box-description li {
+            margin-bottom: 4px;
+        }
+
+        /* Arrow Styles */
+        .arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .arrow-line {
+            width: 3px;
+            height: 50px;
+            background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+            position: relative;
+        }
+
+        .arrow-line::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #94a3b8;
+        }
+
+        .split-arrows {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 25px 0;
+        }
+
+        .split-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .split-arrow .arrow-line {
+            height: 40px;
+        }
+
+        /* Purpose Label */
+        .purpose-label {
+            text-align: center;
+            background: #f1f5f9;
+            border-left: 4px solid #3b82f6;
+            padding: 16px 24px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+
+        .purpose-label strong {
+            color: #1e3a5f;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .purpose-label span {
+            color: #475569;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* Grid Layout for Multiple Boxes */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legend-box {
+            width: 50px;
+            height: 35px;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .legend-box.process {
+            border-radius: 6px;
+        }
+
+        .legend-box.output {
+            border-radius: 18px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .legend-text {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <h1>Spatial AQI Analysis Methodology</h1>
+            <p>New York State (2020–2025) | Multi-Layer Spatial Aggregation Framework</p>
+        </div>
+
+        <div class="flowchart">
+            
+            <!-- INPUT / PREPROCESSING -->
+            <div class="section preprocessing">
+                <div class="section-header">
+                    <div class="section-title">INPUT / PREPROCESSING</div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="box process-box">
+                        <div class="box-title">Raw AQI Monitoring Data</div>
+                        <div class="box-description">
+                            Point-level AQI measurements from monitoring stations across NYS (2020–2025)
+                        </div>
+                    </div>
+                    
+                    <div class="box process-box">
+                        <div class="box-title">Spatial Boundary Definition</div>
+                        <div class="box-description">
+                            New York State boundary shapefile used to constrain analysis extent
+                        </div>
+                    </div>
+                    
+                    <div class="box process-box">
+                        <div class="box-title">Dataset Integration</div>
+                        <div class="box-description">
+                            Merging yearly pollutant datasets into unified feature classes
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="box process-box">
+                        <div class="box-title">Summary Statistics</div>
+                        <div class="box-description">
+                            Compute maximum AQI per monitoring site per year
+                        </div>
+                    </div>
+                    
+                    <div class="box output-box">
+                        <div class="box-title">Joined AQI Point Dataset</div>
+                        <div class="box-description">
+                            Summary tables joined back to AQI point features
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- LAYER 1: IDW -->
+            <div class="section layer1">
+                <div class="section-header">
+                    <div class="section-title">LAYER 1: Continuous Surface Analysis (IDW)</div>
+                    <div class="section-subtitle">"Capturing spatial gradients and hotspots"</div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="box process-box">
+                        <div class="box-title">IDW Interpolation</div>
+                        <div class="box-description">
+                            Inverse Distance Weighted interpolation applied to AQI point data to estimate continuous spatial variation
+                        </div>
+                    </div>
+                    
+                    <div class="box process-box">
+                        <div class="box-title">Raster Processing</div>
+                        <div class="box-description">
+                            <ul>
+                                <li>Clip interpolated raster to NY State boundary</li>
+                                <li>Convert raster to points for downstream analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="purpose-label">
+                    <strong>Purpose:</strong>
+                    <span>Estimate continuous spatial variation of maximum AQI across NYS, revealing gradients and pollution hotspots</span>
+                </div>
+            </div>
+
+            <div class="arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- LAYER 2: HEXAGONS -->
+            <div class="section layer2">
+                <div class="section-header">
+                    <div class="section-title">LAYER 2: Hexagonal Aggregation</div>
+                    <div class="section-subtitle">"Standardizing spatial units & reducing edge bias"</div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="box process-box">
+                        <div class="box-title">Hexagonal Tessellation</div>
+                        <div class="box-description">
+                            Creation of uniform hexagonal grid covering New York State
+                        </div>
+                    </div>
+                    
+                    <div class="box process-box">
+                        <div class="box-title">Spatial Join</div>
+                        <div class="box-description">
+                            Join AQI point data to hexagonal features
+                        </div>
+                    </div>
+                    
+                    <div class="box output-box">
+                        <div class="box-title">Aggregated Hexagon Values</div>
+                        <div class="box-description">
+                            AQI values aggregated per hexagon for uniform comparison
+                        </div>
+                    </div>
+                </div>
+
+                <div class="purpose-label">
+                    <strong>Purpose:</strong>
+                    <span>Reduce point-level noise and enable standardized spatial comparison across uniform geographic units</span>
+                </div>
+            </div>
+
+            <div class="arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- LAYER 3: BUFFERS -->
+            <div class="section layer3">
+                <div class="section-header">
+                    <div class="section-title">LAYER 3: Buffer-Based Proximity Analysis</div>
+                    <div class="section-subtitle">"Assessing localized influence zones"</div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="box process-box">
+                        <div class="box-title">Buffer Zone Generation</div>
+                        <div class="box-description">
+                            Create distance-based buffer zones around AQI monitoring stations
+                        </div>
+                    </div>
+                    
+                    <div class="box output-box">
+                        <div class="box-title">Proximity Exposure Patterns</div>
+                        <div class="box-description">
+                            Comparison of AQI behavior within increasing distance bands
+                        </div>
+                    </div>
+                </div>
+
+                <div class="purpose-label">
+                    <strong>Purpose:</strong>
+                    <span>Examine spatial influence and proximity-based exposure patterns around monitoring locations</span>
+                </div>
+            </div>
+
+            <div class="arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- LAYER 4: VORONOI -->
+            <div class="section layer4">
+                <div class="section-header">
+                    <div class="section-title">LAYER 4: Voronoi (Thiessen) Polygon Analysis</div>
+                    <div class="section-subtitle">"Population-normalized exposure analysis"</div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="box process-box">
+                        <div class="box-title">Voronoi Polygon Generation</div>
+                        <div class="box-description">
+                            Create Voronoi polygons from AQI monitoring stations, clipped to NY State boundary
+                        </div>
+                    </div>
+                    
+                    <div class="box process-box">
+                        <div class="box-title">Population Data Integration</div>
+                        <div class="box-description">
+                            Join population data to each Voronoi zone
+                        </div>
+                    </div>
+                    
+                    <div class="box output-box">
+                        <div class="box-title">AQI Per Million Population</div>
+                        <div class="box-description">
+                            Calculate pollution exposure normalized by population density
+                        </div>
+                    </div>
+                </div>
+
+                <div class="purpose-label">
+                    <strong>Purpose:</strong>
+                    <span>Normalize pollution exposure by population to identify areas with disproportionate environmental health burden</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box process"></div>
+                <span class="legend-text">Process / Method</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box output"></div>
+                <span class="legend-text">Output / Result</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

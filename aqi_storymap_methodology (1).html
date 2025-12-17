@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Spatial Analysis Methodology - StoryMap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Avenir Next', 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            color: #323232;
+            line-height: 1.6;
+        }
+
+        /* StoryMap Container */
+        .storymap-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            font-weight: 400;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Method Section - Full Width */
+        .method-section {
+            padding: 60px 40px;
+            border-bottom: 3px solid #e8e8e8;
+        }
+
+        .method-section:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .method-section:nth-child(odd) {
+            background: #ffffff;
+        }
+
+        /* Section Header */
+        .method-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .layer-badge {
+            display: inline-block;
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .preprocessing-badge { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .layer1-badge { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .layer2-badge { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .layer3-badge { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .layer4-badge { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+        .method-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+        }
+
+        .method-subtitle {
+            font-size: 18px;
+            color: #6b7280;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Side-by-Side Layout */
+        .sidecar-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .sidecar-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* Content Column */
+        .content-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Visual Column */
+        .visual-column {
+            position: sticky;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Process Cards */
+        .process-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .method-section:nth-child(even) .process-card {
+            background: white;
+        }
+
+        .process-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-color: #cbd5e1;
+        }
+
+        .card-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #1e3a5f;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .card-description {
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.7;
+        }
+
+        .card-description ul {
+            margin-top: 12px;
+            padding-left: 24px;
+        }
+
+        .card-description li {
+            margin-bottom: 8px;
+        }
+
+        /* Output Card */
+        .output-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+        }
+
+        .output-badge {
+            display: inline-block;
+            background: #0ea5e9;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        /* Purpose Panel */
+        .purpose-panel {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 6px solid #f59e0b;
+            border-radius: 8px;
+            padding: 24px 28px;
+            margin-top: 20px;
+        }
+
+        .purpose-panel h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .purpose-panel h3::before {
+            content: "🎯";
+            font-size: 20px;
+        }
+
+        .purpose-panel p {
+            font-size: 16px;
+            color: #78350f;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .flow-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .flow-icon {
+            width: 48px;
+            height: 48px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .flow-text {
+            flex: 1;
+        }
+
+        .flow-text h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+        }
+
+        .flow-text p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .arrow-down {
+            text-align: center;
+            margin: 16px 0;
+            color: #9ca3af;
+            font-size: 24px;
+        }
+
+        /* Key Insight Box */
+        .key-insight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .key-insight h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .key-insight p {
+            font-size: 15px;
+            color: #1e3a8a;
+            line-height: 1.6;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .summary-section h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .summary-section p {
+            font-size: 18px;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+            opacity: 0.95;
+        }
+
+        /* Legend */
+        .legend {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+
+        .legend h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .legend-items {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legend-box {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-box.process {
+            background: white;
+        }
+
+        .legend-box.output {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-color: #0ea5e9;
+        }
+
+        .legend-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="storymap-container">
+        
+        <!-- HERO SECTION -->
+        <div class="hero-section">
+            <h1>Spatial AQI Analysis Methodology</h1>
+            <p>A Multi-Layer Framework for Understanding Air Quality Patterns Across New York State (2020–2025)</p>
+        </div>
+
+        <!-- PREPROCESSING SECTION -->
+        <div class="method-section">
+            <div class="method-header">
+                <div class="layer-badge preprocessing-badge">Input / Preprocessing</div>
+                <h2 class="method-title">Data Foundation & Integration</h2>
+            </div>
+
+            <div class="sidecar-container">
+                <div class="content-column">
+                    <div class="process-card">
+                        <div class="card-number">1</div>
+                        <h3 class="card-title">Raw AQI Monitoring Data</h3>
+                        <p class="card-description">
+                            Point-level Air Quality Index measurements collected from monitoring stations distributed across New York State, covering the five-year period from 2020 to 2025.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">2</div>
+                        <h3 class="card-title">Spatial Boundary Definition</h3>
+                        <p class="card-description">
+                            New York State boundary shapefile applied to constrain the analysis extent and ensure all spatial operations remain within the study area.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">3</div>
+                        <h3 class="card-title">Dataset Integration</h3>
+                        <p class="card-description">
+                            Merging of yearly pollutant datasets into unified feature classes, creating a comprehensive multi-year database for analysis.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="visual-column">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <div class="flow-icon">📍</div>
+                            <div class="flow-text">
+                                <h4>AQI Point Data</h4>
+                                <p>Raw monitoring station measurements</p>
+                            </div>
+                        </div>
+                        <div class="arrow-down">↓</div>
+                        <div class="flow-step">
+                            <div class="flow-icon">🗺️</div>
+                            <div class="flow-text">
+                                <h4>Boundary Clipping</h4>
+                                <p>Spatial constraint to NYS extent</p>
+                            </div>
+                        </div>
+                        <div class="arrow-down">↓</div>
+                        <div class="flow-step">
+                            <div class="flow-icon">🔗</div>
+                            <div class="flow-text">
+                                <h4>Data Merging</h4>
+                                <p>Unified multi-year dataset</p>
+                            </div>
+                        </div>
+                        <div class="arrow-down">↓</div>
+                        <div class="flow-step">
+                            <div class="flow-icon">📊</div>
+                            <div class="flow-text">
+                                <h4>Summary Statistics</h4>
+                                <p>Max AQI per site per year</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-badge">Output</div>
+                        <h3 class="card-title">Joined AQI Point Dataset</h3>
+                        <p class="card-description">
+                            Cleaned and integrated point dataset with summary statistics joined back to spatial features, ready for multi-layer analysis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 1: IDW -->
+        <div class="method-section">
+            <div class="method-header">
+                <div class="layer-badge layer1-badge">Layer 1</div>
+                <h2 class="method-title">Continuous Surface Analysis (IDW)</h2>
+                <p class="method-subtitle">"Capturing spatial gradients and hotspots"</p>
+            </div>
+
+            <div class="sidecar-container">
+                <div class="content-column">
+                    <div class="process-card">
+                        <div class="card-number">1</div>
+                        <h3 class="card-title">IDW Interpolation</h3>
+                        <p class="card-description">
+                            Inverse Distance Weighted (IDW) interpolation applied to AQI point data to estimate continuous spatial variation across the entire study area. This method assumes that nearby locations have more influence than distant ones.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">2</div>
+                        <h3 class="card-title">Raster Processing</h3>
+                        <p class="card-description">
+                            <ul>
+                                <li>Clip interpolated raster surface to New York State boundary</li>
+                                <li>Convert continuous raster to point features for downstream spatial analysis</li>
+                            </ul>
+                        </p>
+                    </div>
+
+                    <div class="purpose-panel">
+                        <h3>Analysis Purpose</h3>
+                        <p>Estimate continuous spatial variation of maximum AQI values across New York State, revealing pollution gradients and identifying geographic hotspots where air quality concerns are most severe.</p>
+                    </div>
+                </div>
+
+                <div class="visual-column">
+                    <div class="key-insight">
+                        <h3>Key Insight</h3>
+                        <p>IDW interpolation transforms discrete monitoring station data into a continuous surface, allowing us to visualize and analyze air quality patterns in areas without direct measurements.</p>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-badge">Output</div>
+                        <h3 class="card-title">Continuous AQI Surface</h3>
+                        <p class="card-description">
+                            A spatially continuous representation of maximum AQI values across NYS, enabling identification of pollution gradients and geographic hotspots.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 2: HEXAGONS -->
+        <div class="method-section">
+            <div class="method-header">
+                <div class="layer-badge layer2-badge">Layer 2</div>
+                <h2 class="method-title">Hexagonal Aggregation</h2>
+                <p class="method-subtitle">"Standardizing spatial units & reducing edge bias"</p>
+            </div>
+
+            <div class="sidecar-container">
+                <div class="content-column">
+                    <div class="process-card">
+                        <div class="card-number">1</div>
+                        <h3 class="card-title">Hexagonal Tessellation</h3>
+                        <p class="card-description">
+                            Creation of uniform hexagonal grid covering New York State. Hexagons provide superior spatial aggregation compared to squares because each cell has equidistant neighbors.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">2</div>
+                        <h3 class="card-title">Spatial Join</h3>
+                        <p class="card-description">
+                            Join AQI point data to hexagonal features based on spatial location, associating each measurement with its containing hexagon.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">3</div>
+                        <h3 class="card-title">Aggregation</h3>
+                        <p class="card-description">
+                            Calculate summary statistics (mean, maximum, count) of AQI values within each hexagon for standardized comparison.
+                        </p>
+                    </div>
+
+                    <div class="purpose-panel">
+                        <h3>Analysis Purpose</h3>
+                        <p>Reduce point-level noise and variability by aggregating data into uniform geographic units, enabling standardized spatial comparison and pattern recognition across the state.</p>
+                    </div>
+                </div>
+
+                <div class="visual-column">
+                    <div class="key-insight">
+                        <h3>Why Hexagons?</h3>
+                        <p>Hexagonal grids reduce sampling bias from edge effects and provide more uniform spatial relationships between neighboring cells compared to square grids.</p>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-badge">Output</div>
+                        <h3 class="card-title">Aggregated Hexagon Values</h3>
+                        <p class="card-description">
+                            AQI statistics aggregated into uniform hexagonal units, facilitating fair spatial comparison and pattern analysis across regions.
+                        </p>
+                    </div>
+
+                    <div class="legend">
+                        <h4>Hexagon Benefits</h4>
+                        <p style="text-align: center; font-size: 14px; color: #6b7280; margin-top: 8px;">
+                            ✓ Equal neighbor distances<br>
+                            ✓ Reduced edge effects<br>
+                            ✓ Uniform area comparison
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 3: BUFFERS -->
+        <div class="method-section">
+            <div class="method-header">
+                <div class="layer-badge layer3-badge">Layer 3</div>
+                <h2 class="method-title">Buffer-Based Proximity Analysis</h2>
+                <p class="method-subtitle">"Assessing localized influence zones"</p>
+            </div>
+
+            <div class="sidecar-container">
+                <div class="content-column">
+                    <div class="process-card">
+                        <div class="card-number">1</div>
+                        <h3 class="card-title">Buffer Zone Generation</h3>
+                        <p class="card-description">
+                            Create concentric distance-based buffer zones around each AQI monitoring station at multiple radii (e.g., 5km, 10km, 15km) to examine spatial influence.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">2</div>
+                        <h3 class="card-title">Distance-Decay Analysis</h3>
+                        <p class="card-description">
+                            Compare AQI values and variability within each buffer ring to understand how air quality changes with distance from monitoring stations.
+                        </p>
+                    </div>
+
+                    <div class="purpose-panel">
+                        <h3>Analysis Purpose</h3>
+                        <p>Examine the spatial influence and proximity-based exposure patterns around monitoring locations, understanding how pollution impacts vary with distance from measurement sites.</p>
+                    </div>
+                </div>
+
+                <div class="visual-column">
+                    <div class="key-insight">
+                        <h3>Distance Matters</h3>
+                        <p>Buffer analysis reveals whether pollution effects are highly localized around sources or diffuse across broader regions, informing exposure assessment strategies.</p>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-badge">Output</div>
+                        <h3 class="card-title">Proximity Exposure Patterns</h3>
+                        <p class="card-description">
+                            Comparative analysis of AQI behavior within increasing distance bands, revealing spatial decay patterns and localized influence zones.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 4: VORONOI -->
+        <div class="method-section">
+            <div class="method-header">
+                <div class="layer-badge layer4-badge">Layer 4</div>
+                <h2 class="method-title">Voronoi (Thiessen) Polygon Analysis</h2>
+                <p class="method-subtitle">"Population-normalized exposure analysis"</p>
+            </div>
+
+            <div class="sidecar-container">
+                <div class="content-column">
+                    <div class="process-card">
+                        <div class="card-number">1</div>
+                        <h3 class="card-title">Voronoi Polygon Generation</h3>
+                        <p class="card-description">
+                            Create Voronoi (Thiessen) polygons from AQI monitoring stations, clipped to NY State boundary. Each polygon contains all locations closer to its monitoring station than to any other station.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">2</div>
+                        <h3 class="card-title">Population Data Integration</h3>
+                        <p class="card-description">
+                            Spatially join census population data to each Voronoi zone, associating demographic information with air quality measurements.
+                        </p>
+                    </div>
+
+                    <div class="process-card">
+                        <div class="card-number">3</div>
+                        <h3 class="card-title">Normalization Calculation</h3>
+                        <p class="card-description">
+                            Calculate AQI exposure per million population for each zone, standardizing pollution burden by population density to identify disproportionate impacts.
+                        </p>
+                    </div>
+
+                    <div class="purpose-panel">
+                        <h3>Analysis Purpose</h3>
+                        <p>Normalize pollution exposure by population to identify areas with disproportionate environmental health burden, revealing environmental justice patterns and vulnerable communities.</p>
+                    </div>
+                </div>
+
+                <div class="visual-column">
+                    <div class="key-insight">
+                        <h3>Environmental Justice Lens</h3>
+                        <p>Population normalization reveals which communities face the highest per-capita pollution exposure, essential for equitable policy interventions and resource allocation.</p>
+                    </div>
+
+                    <div class="output-card">
+                        <div class="output-badge">Final Output</div>
+                        <h3 class="card-title">AQI Per Million Population</h3>
+                        <p class="card-description">
+                            Population-normalized pollution exposure metrics that identify communities experiencing disproportionate environmental health risks relative to their size.
+                        </p>
+                    </div>
+
+                    <div class="legend">
+                        <h4>Voronoi Properties</h4>
+                        <p style="text-align: center; font-size: 14px; color: #6b7280; margin-top: 8px;">
+                            ✓ Natural service areas<br>
+                            ✓ Nearest-neighbor logic<br>
+                            ✓ Complete spatial coverage
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY SECTION -->
+        <div class="summary-section">
+            <h2>Integrated Multi-Layer Framework</h2>
+            <p>
+                This four-layer spatial analysis framework transforms raw AQI monitoring data through increasingly sophisticated aggregation methods—from continuous interpolation to population-normalized exposure zones—providing complementary perspectives on air quality patterns, spatial relationships, and environmental health equity across New York State.
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
